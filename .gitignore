@@ -1,0 +1,6 @@
+./proessGravity
+./processPoints
+*.hi
+*.class
+*.o
+.DS_Store
