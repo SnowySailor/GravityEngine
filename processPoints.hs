@@ -1,10 +1,11 @@
 import System.IO as IO
 import System.Environment
 import Data.List as L
+import NumberTuples
 
 main = do
-	(points:len:_) <- getArgs
-	IO.putStrLn $ (show $ doGravity (read points :: [ComplexPoint]) (read len :: Int)) ++ " aaa " ++ processCollisions points
+	(points:len:nextKey:_) <- getArgs
+	IO.putStrLn $ (show $ doGravity (read points :: [ComplexPoint]) (read len :: Int)) ++ " aaa " ++ processCollisions points (read nextKey :: Int)
 
 --data SimplePoint = SimplePoint {
 --	sKey :: Int,
@@ -38,8 +39,11 @@ timeConstant :: Double
 timeConstant = 50
 
 -- Collisions
-processCollisions :: String -> String
-processCollisions points = show . filterDupes . getCollisions . parsePoints $ points
+processCollisions :: String -> Key -> String
+processCollisions points key = let pointsFromListSource = getListFromTuples processedTuples;
+							   aPoints = parsePoints points;
+							   processedTuples = processTuples . filterDupes . getCollisions $ aPoints
+							   in (show (getPointsFromList pointsFromListSource aPoints key)) ++ " aaa " ++ (show $ L.concat processedTuples)
 
 getCollisions :: [ComplexPoint] -> [(Key, Key)]
 getCollisions (_:[]) = []
@@ -65,6 +69,30 @@ parsePoints string = read string :: [ComplexPoint]
 
 filterDupes :: [(Key, Key)] -> [(Key, Key)]
 filterDupes list = L.nub $ [(lower, upper) | (key1,key2) <- list, let lower = min key1 key2, let upper = max key1 key2]
+
+getListFromTuples :: [[Key]] -> [([Key], Key)]
+getListFromTuples listOfTuples = zip listOfTuples [0..]
+
+getPointsFromList :: [([Key], Key)] -> [ComplexPoint] -> Key -> [ComplexPoint]
+getPointsFromList keys points newKey = [point | (keyList,addToKey) <- keys, let point = mergePoints keyList points (newKey + addToKey)]
+
+mergePoints :: [Key] -> [ComplexPoint] -> Key -> ComplexPoint
+mergePoints keys points newKey = combine ([newPoint | newPoint <- points, (key newPoint) `elem` keys]) newKey
+
+combine :: [ComplexPoint] -> Key -> ComplexPoint
+combine points newKey = let (xVel, yVel, newMass) = momentum $ [(xV, yV, m) | (ComplexPoint _ _ _ _ xV yV _ _ m) <- points];
+				 	 xCenter = (sum $ [xPos * m | point <- points, let xPos = (x point), let m = mass point]) / totalMass;
+				 	 yCenter = (sum $ [yPos * m | point <- points, let yPos = (y point), let m = mass point]) / totalMass;
+				 	 totalMass = sum $ [m | point <- points, let m = mass point];
+				 	 newR = 40
+		 	 	 in ComplexPoint newKey xCenter yCenter newR xVel yVel 0 0 newMass
+
+momentum :: [(Velocity, Velocity, Double)] -> (Velocity, Velocity, Double)
+momentum dataPoints = let xVel = (sum $ [vel*mass | (vel,_,mass) <- dataPoints]) / mass;
+					  yVel = (sum $ [vel*mass | (_,vel,mass) <- dataPoints]) / mass;
+					  mass = sum $ [mass | (_,_,mass) <- dataPoints]
+					  in (xVel, yVel, mass)
+
 
 -- Movement
 getXYForces :: ComplexPoint -> [ComplexPoint] -> [(Force, Force)]
