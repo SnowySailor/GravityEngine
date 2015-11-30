@@ -16,12 +16,12 @@ public class PhysicsEngine {
 	}
 
 	public PhysicsEngine() {
-		points.add(new Point(1,200,200,20,0,0,0,0,800000000));
-		points.add(new Point(2,200,340,25,0,0,0,0,800000000));
-		points.add(new Point(3,300,700,20,0,0,0,0,800000000));
-		points.add(new Point(4,700,100,20,0,0,0,0,800000000));
-		points.add(new Point(5,1000,0,20,0,0,0,0,800000000));
-		points.nextKey = 6;
+		points.add(new Point(1,500,200,10,3,0,0,0,80000));
+		points.add(new Point(2,500,350,25,0,0,0,0,800000000));
+		// points.add(new Point(3,300,700,20,0,0,0,0,800000000));
+		// points.add(new Point(4,700,100,20,0,0,0,0,800000000));
+		// points.add(new Point(5,1000,0,20,0,0,0,0,800000000));
+		points.nextKey = 3;
 
 		DrawPanel panel = new DrawPanel(this.points);
 		JFrame app = new JFrame();
@@ -30,7 +30,7 @@ public class PhysicsEngine {
 		app.setSize(1000,800);
 		app.setVisible(true);
 		int time = 0;
-		while(time < 500) {
+		while(time < 200) {
 			panel.repaint();
 			time++;
 			System.out.println("painted");
@@ -48,11 +48,11 @@ public class PhysicsEngine {
 	public String getGravity() {
 		long start = System.nanoTime();
 		String build = null;
-		String inputString = this.points.getPoints();
+		String inputString = this.points.toString();
 
 		if(inputString == null)
 			inputString = points.toString();
-		points.setPoints(inputString);
+		//points.setPoints(inputString);
 		System.out.println("Input string: " + inputString);
 
 		try {
@@ -75,52 +75,60 @@ public class PhysicsEngine {
 		return build;
 	}
 
-	public SimplePoint[] handleGravity() {
+	public Point[] handleGravity() {
 		long start = System.nanoTime();
 		String[] gravityTotal = getGravity().split(" aaa ");
 		String gravity = gravityTotal[0];
 		// System.out.println("Gravity: " + gravity);
 		String newPoints = gravityTotal[1];
-		System.out.println("New points: " + newPoints);
+		//System.out.println("New points: " + newPoints);
 		String removeElems = gravityTotal[2];
 		System.out.println("Remove: " + removeElems);
 		// System.out.println("Gravity : " + gravity);
 		// String sCollisions = gravityTotal[1];
-		SimplePoint[] p = fromString(gravity);
+		Point[] p = fromString(gravity);
+		Points newPointType = new Points();
+		for(Point a : p) {
+			newPointType.add(a);
+			System.out.println("Point added: " + a.toString());
+		}
+		this.points = newPointType;
+		this.points.nextKey = points.points.length + 1;
 		handleCollisions(newPoints, removeElems);
 		//for(int[] a : collisions)
 		//	for(int b : a)
 		//		System.out.println(b);
 		//p = handleCollisions(collisions);
-		String build;
+		//String build;
 		// for(SimplePoint a : p)
 		// 	build += (a.toString() + ", ");
 		// build = build.substring(0,build.length()-2);
 		// build += "]";
-		build = points.toString();
-		if(newPoints.length() > 10) {
-			build = build.substring(0,build.length()-1) + ", ";
-			build += newPoints.substring(1,newPoints.length()) + "";
-		}
-		//System.out.println("Stuff has been done: " + build);
-		this.points.setPoints(build);
+		// build = points.toString();
+		// if(newPoints.length() > 10) {
+		// 	build = build.substring(0,build.length()-1) + ", ";
+		// 	build += newPoints.substring(1,newPoints.length()) + "";
+		// }
+		// //System.out.println("Stuff has been done: " + build);
+		// this.points.setPoints(build);
 		return p;
 		// System.out.println(build);System.out.println();
 		// long end = System.nanoTime();
 		// System.out.println("Real:"+((double)end-(double)start)/1000000000.0);
 	}
 
-	public SimplePoint[] fromString(String output) {
+	public Point[] fromString(String output) {
 		long start = System.nanoTime();
 		output = output.substring(1,output.length()-1);
 		output = output.replace("},", "}");
+		output = output.replace("]","").replace("[","");
 		String[] points = output.split("ComplexPoint");
 
 		int len = points.length;
 
-		SimplePoint[] simplePoints = new SimplePoint[len-1];
+		Point[] simplePoints = new Point[len-1];
 		//System.out.println(len);
-		String current; int key,keyPos,keyEnd,xEnd,yEnd,rEnd; double x,y,r,xVel,yVel,xAcc,yAcc,mass;
+		String current; int key,keyPos,keyEnd,xEnd,yEnd,rEnd,xVelEnd,yVelEnd,xAccEnd,yAccEnd,massEnd; double x,y,r,xVel,yVel,xAcc,yAcc,mass;
 		for(int i = 0; i < len; i++) {
 			if(!(points[i].length() < 10)) {
 				current = points[i];
@@ -146,8 +154,8 @@ public class PhysicsEngine {
 				yAcc = Double.parseDouble(current.substring(xAccEnd+9, yAccEnd));
 				mass = Double.parseDouble(current.substring(yAccEnd+9, massEnd));
 
-				simplePoints[i-1] = new SimplePoint(current, x,y,r,key);
-				//simplePoints[i-1] = new Point(key, x, y, r, xVel, yVel, xAcc, yAcc, mass, current);
+				//simplePoints[i-1] = new SimplePoint(current, x,y,r,key);
+				simplePoints[i-1] = new Point(key, x, y, r, xVel, yVel, xAcc, yAcc, mass, current);
 			}
 		}
 		this.points.length = len-1;
@@ -171,10 +179,16 @@ public class PhysicsEngine {
 		int[] keysToRemove = new int[keysAsString.length];
 		for(int i = 0; i < keysAsString.length; i++)
 			keysToRemove[i] = Integer.parseInt(keysAsString[i]);
-		for(int k : keysToRemove)
+		for(int k : keysToRemove) {
 			this.points.removePoint(k);
+			System.out.println("Removed : " + k);
+		}
 		String newString = points.toString();
-		this.points.nextKey++;
+		System.out.println("Doing fromString: " + newString);
+		Point[] newPointsToAdd = fromString(newPoints);
+		this.points.nextKey += newPointsToAdd.length;
+		for(Point a : newPointsToAdd)
+			this.points.add(a);
 		//this.points.setPoints(newString.substring(0,newString.length()-1) + newPoints + "]");
 	}
 
@@ -194,8 +208,8 @@ public class PhysicsEngine {
 			super.paintComponent(g);
 
 			g.setColor(Color.RED);
-			SimplePoint[] pts = handleGravity();
-			for(SimplePoint p : pts) {
+			Point[] pts = handleGravity();
+			for(Point p : pts) {
 				if(p.key == 1) {g.setColor(Color.GREEN);}else if(p.key == 2){g.setColor(Color.BLUE);}else if(p.key==3){g.setColor(Color.BLACK);}else if(p.key==4){g.setColor(Color.PINK);}else{g.setColor(Color.RED);}
 				g.fillOval((int)p.x, (int)p.y, (int)p.r*2,(int)p.r*2);
 			}

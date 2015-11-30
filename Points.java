@@ -46,7 +46,10 @@ public class Points {
 	public String toString() {
 		String build =  "[";
 		for(Point a : this.points) {
-			build += "ComplexPoint {key="+a.key+", x="+a.x+", y="+a.y+", r="+a.r+", xVel="+a.xVel+", yVel="+a.yVel+", xAcc="+a.xAcc+", yAcc="+a.yAcc+", mass="+a.mass+"}, ";
+			if(a.sValues == null)
+				build += "ComplexPoint {key="+a.key+", x="+a.x+", y="+a.y+", r="+a.r+", xVel="+a.xVel+", yVel="+a.yVel+", xAcc="+a.xAcc+", yAcc="+a.yAcc+", mass="+a.mass+"}, ";
+			else
+				build += a.toString() + ", ";
 		}
 		build = build.substring(0,build.length()-2);
 		build += "]";

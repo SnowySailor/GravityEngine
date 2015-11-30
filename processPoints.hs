@@ -4,8 +4,13 @@ import Data.List as L
 import NumberTuples
 
 main = do
-	(points:len:nextKey:_) <- getArgs
-	IO.putStrLn $ (show $ doGravity (read points :: [ComplexPoint]) (read len :: Int)) ++ " aaa " ++ processCollisions points (read nextKey :: Int)
+	(pointString:lenString:nextKeyString:_) <- getArgs
+	let points = parsePoints pointString;
+		nextKey = (read nextKeyString :: Int);
+		processedPoints = removeCollisions $ doGravity points (read lenString :: Int);
+		finalAccumulation = getListOfNewPoints points nextKey ++ processedPoints;
+		futureNextKey = show $ 1 + (getHighestKey $ finalAccumulation);
+	IO.putStrLn $ (show $ finalAccumulation) ++ " aaa " ++ futureNextKey
 
 --data SimplePoint = SimplePoint {
 --	sKey :: Int,
@@ -39,11 +44,19 @@ timeConstant :: Double
 timeConstant = 50
 
 -- Collisions
-processCollisions :: String -> Key -> String
-processCollisions points key = let pointsFromListSource = getListFromTuples processedTuples;
+processCollisions' :: String -> Key -> String
+processCollisions' points key = let pointsFromListSource = getListFromTuples processedTuples;
 							   aPoints = parsePoints points;
 							   processedTuples = processTuples . filterDupes . getCollisions $ aPoints
 							   in (show (getPointsFromList pointsFromListSource aPoints key)) ++ " aaa " ++ (show $ L.concat processedTuples)
+
+processCollisions :: [ComplexPoint] -> [Key]
+processCollisions points = L.concat $ processTuples . filterDupes . getCollisions $ points
+
+getListOfNewPoints :: [ComplexPoint] -> Key -> [ComplexPoint]
+getListOfNewPoints points nextKey = let pointsFromListSource = getListFromTuples processedTuples;
+									processedTuples = processTuples . filterDupes . getCollisions $ points
+									in getPointsFromList pointsFromListSource points nextKey
 
 getCollisions :: [ComplexPoint] -> [(Key, Key)]
 getCollisions (_:[]) = []
@@ -140,7 +153,13 @@ changePoint point otherPoints = let position = findPosition point otherPoints; v
 doGravity :: [ComplexPoint] -> Int -> [ComplexPoint]
 doGravity (point:[]) _ = [point]
 doGravity _ 0 = []
-doGravity (point1:point2:rest) numberOfThings = (changePoint point1 (point2:rest)) : doGravity ((point2:rest) ++ [point1]) (numberOfThings-1) 
+doGravity (point1:point2:rest) numberOfThings = (changePoint point1 (point2:rest)) : doGravity ((point2:rest) ++ [point1]) (numberOfThings-1)
+
+removeCollisions :: [ComplexPoint] -> [ComplexPoint]
+removeCollisions p = [validPoint | validPoint <- p, let returnList = processCollisions p, not $ (key validPoint) `elem` returnList]
+
+getHighestKey :: [ComplexPoint] -> Key
+getHighestKey point = head . reverse . sort $ [k | p <- point, let k = key p]
 
 showThings :: [ComplexPoint] -> String
 showThings points = show points
