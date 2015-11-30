@@ -132,8 +132,9 @@ public class PhysicsEngine {
 
 			g.setColor(Color.RED);
 			Point[] pts = handleGravity();
+			Color[] colors = new Color[]{Color.GREEN, Color.BLUE, Color.BLACK, Color.PINK, Color.RED, Color.GRAY, Color.MAGENTA, Color.ORANGE, Color.YELLOW, Color.CYAN, Color.LIGHT_GRAY, Color.DARK_GRAY};
 			for(Point p : pts) {
-				if(p.key == 1) {g.setColor(Color.GREEN);}else if(p.key == 2){g.setColor(Color.BLUE);}else if(p.key==3){g.setColor(Color.BLACK);}else if(p.key==4){g.setColor(Color.PINK);}else{g.setColor(Color.RED);}
+				g.setColor(colors[p.key]);
 				g.fillOval((int)p.x, (int)p.y, (int)p.r*2,(int)p.r*2);
 			}
 
