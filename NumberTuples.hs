@@ -1,3 +1,6 @@
+-- Authored by Levi Schuck
+-- https://github.com/LeviSchuck
+
 module NumberTuples where
 
 import Control.Monad
