@@ -19,23 +19,23 @@ main = do
 --	sR :: Double
 --} deriving (Show, Read, Eq)
 
-data ComplexPoint = ComplexPoint {
-	key :: Int,
-	x :: Double,
-	y :: Double,
-	r :: Double,
-	xVel :: Double,
-	yVel :: Double,
-	xAcc :: Double,
-	yAcc :: Double,
-	mass :: Double
-} deriving(Show, Read, Eq)
-
 type Key = Int
 type Force = Double
 type Accelleration = Double
 type Velocity = Double
 type Position = Double
+
+data ComplexPoint = ComplexPoint {
+	key :: Int,
+	x :: Position,
+	y :: Position,
+	r :: Double,
+	xVel :: Velocity,
+	yVel :: Velocity,
+	xAcc :: Accelleration,
+	yAcc :: Accelleration,
+	mass :: Double
+} deriving(Show, Read, Eq)
 
 gC :: Double
 gC = 0.0000000000667408
@@ -75,7 +75,7 @@ matches point1 pointList = [points | point2 <- pointList,
 												let r1 = r point1,
 												let r2 = r point2,
 												let points = (key point1,key point2), 
-												sqrt((x2-x1)^2 + (y2-y1)^2) <= (r1 + r2)]
+												sqrt(((x2-x1)^2) + ((y2-y1)^2)) <= (r1 + r2)]
 
 parsePoints :: String -> [ComplexPoint]
 parsePoints string = read string :: [ComplexPoint]
@@ -97,8 +97,10 @@ combine points newKey = let (xVel, yVel, newMass) = momentum $ [(xV, yV, m) | (C
 				 	 xCenter = (sum $ [xPos * m | point <- points, let xPos = (x point), let m = mass point]) / totalMass;
 				 	 yCenter = (sum $ [yPos * m | point <- points, let yPos = (y point), let m = mass point]) / totalMass;
 				 	 totalMass = sum $ [m | point <- points, let m = mass point];
-				 	 newR = 40
-		 	 	 in ComplexPoint newKey xCenter yCenter newR xVel yVel 0 0 newMass
+				 	 newR = 40;
+				 	 xAcc = 0;
+				 	 yAcc = 0
+		 	 	 in ComplexPoint newKey xCenter yCenter newR xVel yVel xAcc yAcc newMass
 
 momentum :: [(Velocity, Velocity, Double)] -> (Velocity, Velocity, Double)
 momentum dataPoints = let xVel = (sum $ [vel*mass | (vel,_,mass) <- dataPoints]) / mass;
@@ -140,7 +142,7 @@ findAccelleration point1 otherPoints =  let (xAcc, yAcc) = mapTuple (/(mass poin
 findVelocity :: ComplexPoint -> [ComplexPoint] -> (Velocity, Velocity, Key)
 findVelocity point [] = (xVel point, yVel point, key point)
 findVelocity point otherPoints = let acc = findAccelleration point otherPoints
-					 			 in mapTriple (* timeConstant) acc
+					 			 in addToVelocity point $ mapTriple (* timeConstant) acc
 
 findPosition :: ComplexPoint -> [ComplexPoint] -> (Position, Position, Key)
 findPosition point otherPoints = let xPos = (x point) + (firstElem velocity)*timeConstant; yPos = (y point) + (secondElem velocity) * timeConstant; velocity = findVelocity point otherPoints
@@ -150,11 +152,16 @@ changePoint :: ComplexPoint -> [ComplexPoint] -> ComplexPoint
 changePoint point otherPoints = let position = findPosition point otherPoints; velocity = findVelocity point otherPoints; accelleration = findAccelleration point otherPoints
 								in ComplexPoint (thirdElem position) (firstElem position) (secondElem position) (r point) (firstElem velocity) (secondElem velocity) (firstElem accelleration) (secondElem accelleration) (mass point)
 
+
+-- Gravity engine core
 doGravity :: [ComplexPoint] -> Int -> [ComplexPoint]
 doGravity (point:[]) _ = [point]
 doGravity _ 0 = []
 doGravity (point1:point2:rest) numberOfThings = (changePoint point1 (point2:rest)) : doGravity ((point2:rest) ++ [point1]) (numberOfThings-1)
 
+
+
+-- Helper functions
 removeCollisions :: [ComplexPoint] -> [ComplexPoint]
 removeCollisions p = [validPoint | validPoint <- p, let returnList = processCollisions p, not $ (key validPoint) `elem` returnList]
 
@@ -178,3 +185,8 @@ secondElem (_,y,_) = y
 
 thirdElem :: (a,a,b) -> b
 thirdElem (_,_,k) = k
+
+addToVelocity :: ComplexPoint -> (Velocity, Velocity, Key) -> (Velocity, Velocity, Key)
+addToVelocity point (xV, yV, k) = (xV + (xVel point), yV + (yVel point), k)
+
+
