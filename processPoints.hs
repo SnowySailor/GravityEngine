@@ -7,17 +7,11 @@ main = do
 	(pointString:lenString:nextKeyString:_) <- getArgs
 	let points = parsePoints pointString;
 		nextKey = (read nextKeyString :: Int);
-		processedPoints = removeCollisions $ doGravity points (read lenString :: Int);
-		finalAccumulation = getListOfNewPoints points nextKey ++ processedPoints;
+		gravityPoints = doGravity points (read lenString :: Int);
+		processedPoints = removeCollisions $ gravityPoints;
+		finalAccumulation = getListOfNewPoints gravityPoints nextKey ++ processedPoints;
 		futureNextKey = show $ 1 + (getHighestKey $ finalAccumulation);
 	IO.putStrLn $ (show $ finalAccumulation) ++ " aaa " ++ futureNextKey
-
---data SimplePoint = SimplePoint {
---	sKey :: Int,
---	sX :: Double,
---	sY :: Double,
---	sR :: Double
---} deriving (Show, Read, Eq)
 
 type Key = Int
 type Force = Double
@@ -37,11 +31,19 @@ data ComplexPoint = ComplexPoint {
 	mass :: Double
 } deriving(Show, Read, Eq)
 
+
+
+-- Constants
 gC :: Double
 gC = 0.0000000000667408
 
 timeConstant :: Double
 timeConstant = 50
+
+density :: Double
+density = 2400;
+
+
 
 -- Collisions
 processCollisions' :: String -> Key -> String
@@ -96,8 +98,8 @@ combine :: [ComplexPoint] -> Key -> ComplexPoint
 combine points newKey = let (xVel, yVel, newMass) = momentum $ [(xV, yV, m) | (ComplexPoint _ _ _ _ xV yV _ _ m) <- points];
 				 	 xCenter = (sum $ [xPos * m | point <- points, let xPos = (x point), let m = mass point]) / totalMass;
 				 	 yCenter = (sum $ [yPos * m | point <- points, let yPos = (y point), let m = mass point]) / totalMass;
+				 	 newR = 3 `nthRoot` (totalMass * 3.0) / (4.0 * pi * density);
 				 	 totalMass = sum $ [m | point <- points, let m = mass point];
-				 	 newR = 40;
 				 	 xAcc = 0;
 				 	 yAcc = 0
 		 	 	 in ComplexPoint newKey xCenter yCenter newR xVel yVel xAcc yAcc newMass
@@ -107,6 +109,7 @@ momentum dataPoints = let xVel = (sum $ [vel*mass | (vel,_,mass) <- dataPoints])
 					  yVel = (sum $ [vel*mass | (_,vel,mass) <- dataPoints]) / mass;
 					  mass = sum $ [mass | (_,_,mass) <- dataPoints]
 					  in (xVel, yVel, mass)
+
 
 
 -- Movement
@@ -189,4 +192,5 @@ thirdElem (_,_,k) = k
 addToVelocity :: ComplexPoint -> (Velocity, Velocity, Key) -> (Velocity, Velocity, Key)
 addToVelocity point (xV, yV, k) = (xV + (xVel point), yV + (yVel point), k)
 
-
+nthRoot :: (Floating b, Eq b) => b -> b -> b
+n `nthRoot` x = fst $ until (uncurry(==)) (\(_,x0) -> (x0,((n-1)*x0+x/x0**(n-1))/n)) (x,x/n)

@@ -12,49 +12,37 @@ public class PhysicsEngine {
 
 	public static void main(String[] args) {
 		PhysicsEngine run = new PhysicsEngine();
-		//ExecuteShellComand obj = new ExecuteShellComand();
 	}
 
 	public PhysicsEngine() {
-		points.add(new Point(1,500,200,10,-0.25,0,0,0,80000));
-		points.add(new Point(2,500,350,25,0,0,0,0,999999999));
-		points.add(new Point(3,300,700,20,0,0,0,0,80000000));
-		points.add(new Point(4,700,100,20,0,0,0,0,80000000));
-		points.add(new Point(5,1000,0,20,0,0,0,0,80000000));
+		points.add(new Point(1,500,200,-0.35,0,0,0,8000000));
+		points.add(new Point(2,500,350,-0.016,-0.001,0,0,999999999));
+		points.add(new Point(3,300,700,0,0,0,0,80000000));
+		points.add(new Point(4,700,100,0.2,0,0,0,80000000));
+		points.add(new Point(5,1000,0,0,0,0,0,80000000));
 		points.nextKey = 6;
-		System.out.println(points.getPoint(1).toString());
+		System.out.println(java.lang.Math.cbrt(8));
 
-		DrawPanel panel = new DrawPanel(this.points);
+		DrawPanel panel = new DrawPanel();
 		JFrame app = new JFrame();
 		app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		app.add(panel);
 		app.setSize(1000,800);
 		app.setVisible(true);
 		int time = 0;
-		while(time < 500) {
+		while(time < 10000) {
 			panel.repaint();
 			time++;
-			System.out.println("painted");
+			System.out.println('a');
 		}
-
-		//System.out.println(points.getPoint(1).x);
-
-		// int runs = 0;
-		// while(runs < 100) {
-		// 	handleGravity();
-		// 	runs += 1;
-		// }
 	}
 
 	public String getGravity() {
-		long start = System.nanoTime();
 		String build = null;
 		String inputString = this.points.toString();
 
 		if(inputString == null)
 			inputString = points.toString();
-		//points.setPoints(inputString);
-		//System.out.println("Input string: " + inputString);
 
 		try {
 			String[] command = {"/bin/processPointsNew", inputString, ""+points.length, ""+points.nextKey};
@@ -71,8 +59,6 @@ public class PhysicsEngine {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		long stop = System.nanoTime();
-		System.out.println((stop - start)/(double)1000000000);
 		return build;
 	}
 
@@ -87,7 +73,6 @@ public class PhysicsEngine {
 		Points newPointType = new Points();
 		for(Point a : p) {
 			newPointType.add(a);
-			//System.out.println("Point added: " + a.toString());
 		}
 		this.points = newPointType;
 		this.points.nextKey = futureNextKey;
@@ -95,7 +80,6 @@ public class PhysicsEngine {
 	}
 
 	public Point[] fromString(String output) {
-		//System.out.println("Returned: " + output);
 		long start = System.nanoTime();
 		output = output.substring(1,output.length()-1);
 		output = output.replace("},", "}");
@@ -105,12 +89,10 @@ public class PhysicsEngine {
 		int len = points.length;
 
 		Point[] simplePoints = new Point[len-1];
-		//System.out.println(len);
-		String current; int key,keyPos,keyEnd,xEnd,yEnd,rEnd,xVelEnd,yVelEnd,xAccEnd,yAccEnd,massEnd; double x,y,r,xVel,yVel,xAcc,yAcc,mass;
+		String current; int key,keyPos,keyEnd,xEnd,yEnd,rEnd,xVelEnd,yVelEnd,xAccEnd,yAccEnd,massEnd; double x,y,xVel,yVel,xAcc,yAcc,mass;
 		for(int i = 0; i < len; i++) {
 			if(!(points[i].length() < 10)) {
 				current = points[i];
-				//System.out.println(current);
 				keyPos = current.indexOf("key = ");
 				keyEnd = current.indexOf(", x = ");
 				xEnd = current.indexOf(", y = ");
@@ -125,61 +107,24 @@ public class PhysicsEngine {
 				key = Integer.parseInt(current.substring(keyPos+6, keyEnd));
 				x = Double.parseDouble(current.substring(keyEnd+6, xEnd));
 				y = Double.parseDouble(current.substring(xEnd+6, yEnd));
-				r = Double.parseDouble(current.substring(yEnd+6, rEnd));
 				xVel = Double.parseDouble(current.substring(rEnd+9, xVelEnd));
 				yVel = Double.parseDouble(current.substring(xVelEnd+9, yVelEnd));
 				xAcc = Double.parseDouble(current.substring(yVelEnd+9, xAccEnd));
 				yAcc = Double.parseDouble(current.substring(xAccEnd+9, yAccEnd));
 				mass = Double.parseDouble(current.substring(yAccEnd+9, massEnd));
 
-				//simplePoints[i-1] = new SimplePoint(current, x,y,r,key);
-				simplePoints[i-1] = new Point(key, x, y, r, xVel, yVel, xAcc, yAcc, mass, current);
+				simplePoints[i-1] = new Point(key, x, y, xVel, yVel, xAcc, yAcc, mass, current);
 			}
 		}
 		this.points.length = len-1;
-		//System.out.println(simplePoints.length);
 		long end = System.nanoTime();
 		return simplePoints;
 	}
 
-	// public Integer[] addTo(Integer[] array, int key) {
-	// 	Integer[] n = Arrays.copyOf(array, array.length+1);
-	// 	n[array.length] = key;
-	// 	return n;
-	// }
-
-	// public void handleCollisions(String newPoints, String removeElems) {
-	// 	if(newPoints.length() < 10 || removeElems.length() < 4)
-	// 		return;
-	// 	removeElems = removeElems.substring(1,removeElems.length()-1);
-	// 	String[] keysAsString = removeElems.split(",");
-	// 	//System.out.println("wwkrwrgwrgwrgwrgr" + Arrays.toString(keysAsString));
-	// 	int[] keysToRemove = new int[keysAsString.length];
-	// 	for(int i = 0; i < keysAsString.length; i++)
-	// 		keysToRemove[i] = Integer.parseInt(keysAsString[i]);
-	// 	for(int k : keysToRemove) {
-	// 		this.points.removePoint(k);
-	// 		System.out.println("Removed : " + k);
-	// 	}
-	// 	String newString = points.toString();
-	// 	System.out.println("Doing fromString: " + newString);
-	// 	Point[] newPointsToAdd = fromString(newPoints);
-	// 	this.points.nextKey += newPointsToAdd.length;
-	// 	for(Point a : newPointsToAdd)
-	// 		this.points.add(a);
-	// 	//this.points.setPoints(newString.substring(0,newString.length()-1) + newPoints + "]");
-	// }
-
 	public class DrawPanel extends JPanel {
-		Points points = new Points();
-		public DrawPanel(Points p) {
+		public DrawPanel() {
 			super();
-			this.points = p;
 			setBackground(Color.WHITE);
-		}
-
-		public Points getPoints() {
-			return this.points;
 		}
 
 		public void paintComponent(Graphics g) {

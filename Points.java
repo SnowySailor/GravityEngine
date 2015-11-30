@@ -19,15 +19,6 @@ public class Points {
 		this.length += 1;
 	}
 
-	public void removePoint(int key) {
-		for(int i = 0; i < this.points.length; i++) {
-			if(points[i].key == key) {
-				this.points = ArrayUtils.remove(this.points, i);
-				return;
-			}
-		}
-	}
-
 	public Point getPoint(int key) {
 		for(Point a : this.points)
 			if(a.key == key)
