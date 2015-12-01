@@ -34,6 +34,14 @@ public class Points {
 		return this.sPoints;
 	}
 
+	public int getMaxKey() {
+		int max = this.points[0].key;
+		for(Point a : this.points)
+			if(a.key > max)
+				max = a.key;
+		return max;
+	}
+
 	public String toString() {
 		String build =  "[";
 		for(Point a : this.points) {

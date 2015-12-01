@@ -2,53 +2,57 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import javax.swing.*;
 import java.awt.*;
-//import java.awt.image.*;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.lang.Math;
+import java.util.Random;
 
 public class PhysicsEngine {
 	public Points points = new Points();
-	public Dimension size = new Dimension(1000,800);
+	public static final int XSIZE = 1430;
+	public static final int YSIZE = 850;
+	public Dimension size = new Dimension(XSIZE,YSIZE);
+	private Process proc;
+	private BufferedReader stdInput;
 
 	public static void main(String[] args) {
 		PhysicsEngine run = new PhysicsEngine();
 	}
 
 	public PhysicsEngine() {
-		points.add(new Point(1,500,200,-0.35,0,0,0,8000000));
-		points.add(new Point(2,500,350,-0.016,-0.001,0,0,999999999));
+		points.add(new Point(1,500,200,-0.15,0,0,0,8000000));
+		points.add(new Point(2,500,350,-0.016,-0.001,0,0,99999999));
 		points.add(new Point(3,300,700,0,0,0,0,80000000));
-		points.add(new Point(4,700,100,0.2,0,0,0,80000000));
-		points.add(new Point(5,1000,0,0,0,0,0,80000000));
-		points.nextKey = 6;
-		System.out.println(java.lang.Math.cbrt(8));
+		points.add(new Point(4,700,100,0,0,0,0,80000000));
+		points.add(new Point(5,1400,0,0,0,0,0,80000000));
+		points.add(new Point(6,1000,800,0,0,0,0,40000000));
+		//this.points = generateNValues(10, 8000000, 40000000);
+		points.nextKey = points.getMaxKey();
 
 		DrawPanel panel = new DrawPanel();
 		JFrame app = new JFrame();
 		app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		app.add(panel);
-		app.setSize(1000,800);
+		app.setSize(this.size);
 		app.setVisible(true);
 		int time = 0;
 		while(time < 10000) {
 			panel.repaint();
 			time++;
-			System.out.println('a');
+			System.out.println();
 		}
 	}
 
 	public String getGravity() {
 		String build = null;
 		String inputString = this.points.toString();
-
-		if(inputString == null)
-			inputString = points.toString();
+		inputString = points.toString();
 
 		try {
-			String[] command = {"/bin/processPointsNew", inputString, ""+points.length, ""+points.nextKey};
-			Process proc = Runtime.getRuntime().exec(command);
+			String[] command = {"/bin/processGravity", inputString, ""+points.length, ""+points.nextKey};
+			proc = Runtime.getRuntime().exec(command);
 
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 			// read the output from the command
 			String s;
 			while ((s = stdInput.readLine()) != null) {
@@ -119,6 +123,25 @@ public class PhysicsEngine {
 		this.points.length = len-1;
 		long end = System.nanoTime();
 		return simplePoints;
+	}
+
+	public Points generateNValues(int n, int massMin, int massMax) {
+		Random r = new Random();
+		double rangeMin = -0.1;
+		double rangeMax = 0.1;
+		int xMax = XSIZE;
+		int yMax = YSIZE;
+		Points nValues = new Points();
+		for(int i = 1; i <= n; i++) {
+			int x, y, mass; double vX, vY;
+			x =  Math.round((float) Math.random() * xMax);
+			y =  Math.round((float) Math.random() * yMax);
+			mass = 1000000 +  Math.round((float) (Math.random() * (massMax - 1000000)));
+			vX = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
+			vY = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
+			nValues.add(new Point(i, x, y, Math.round(vX),  Math.round(vY), 0, 0, mass));
+		}
+		return nValues;
 	}
 
 	public class DrawPanel extends JPanel {
