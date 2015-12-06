@@ -20,13 +20,19 @@ public class PhysicsEngine {
 	}
 
 	public PhysicsEngine() {
-		points.add(new Point(1,500,200,-0.15,0,0,0,8000000));
-		points.add(new Point(2,500,350,-0.016,-0.001,0,0,99999999));
-		points.add(new Point(3,300,700,0,0,0,0,80000000));
-		points.add(new Point(4,700,100,0,0,0,0,80000000));
-		points.add(new Point(5,1400,0,0,0,0,0,80000000));
-		points.add(new Point(6,1000,800,0,0,0,0,40000000));
-		//this.points = generateNValues(10, 8000000, 40000000);
+		try {
+			String command = "pgrep \"processGravity\" | xargs kill -9";
+			proc = Runtime.getRuntime().exec(command);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		// points.add(new Point(1,500,200,-0.15,0,0,0,8000000));
+		// points.add(new Point(2,500,350,-0.016,-0.001,0,0,99999999));
+		// points.add(new Point(3,300,700,0,0,0,0,80000000));
+		// points.add(new Point(4,700,100,0,0,0,0,80000000));
+		// points.add(new Point(5,1400,0,0,0,0,0,80000000));
+		// points.add(new Point(6,1000,800,0,0,0,0,40000000));
+		this.points = generateNValues(10, 8000000, 90000000);
 		points.nextKey = points.getMaxKey();
 
 		DrawPanel panel = new DrawPanel();
@@ -127,8 +133,8 @@ public class PhysicsEngine {
 
 	public Points generateNValues(int n, int massMin, int massMax) {
 		Random r = new Random();
-		double rangeMin = -0.1;
-		double rangeMax = 0.1;
+		double rangeMin = -0;
+		double rangeMax = 0;
 		int xMax = XSIZE;
 		int yMax = YSIZE;
 		Points nValues = new Points();
@@ -157,7 +163,7 @@ public class PhysicsEngine {
 			Point[] pts = handleGravity();
 			Color[] colors = new Color[]{Color.GREEN, Color.BLUE, Color.BLACK, Color.PINK, Color.RED, Color.GRAY, Color.MAGENTA, Color.ORANGE, Color.YELLOW, Color.CYAN, Color.LIGHT_GRAY, Color.DARK_GRAY};
 			for(Point p : pts) {
-				g.setColor(colors[p.key]);
+				g.setColor(colors[p.key%12]);
 				g.fillOval((int)p.x, (int)p.y, (int)p.r*2,(int)p.r*2);
 			}
 
