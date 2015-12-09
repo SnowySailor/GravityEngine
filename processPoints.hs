@@ -34,11 +34,14 @@ data ComplexPoint = ComplexPoint {
 
 
 -- Constants
+damp :: Double
+damp = 10.5
+
 gC :: Double
 gC = 0.0000000000667408
 
 timeConstant :: Double
-timeConstant = 50
+timeConstant = 200
 
 density :: Double
 density = 2400;
@@ -131,7 +134,8 @@ sign point1 point2
 	| otherwise              = 1
 
 force :: ComplexPoint -> ComplexPoint -> Force
-force (ComplexPoint _ x1 y1 _ _ _ _ _ mass1) (ComplexPoint _ x2 y2 _ _ _ _ _ mass2) = (gC * mass1 * mass2) / ((sqrt((x2-x1)^2 + (y2-y1)^2)))
+force (ComplexPoint _ x1 y1 _ _ _ _ _ mass1) (ComplexPoint _ x2 y2 _ _ _ _ _ mass2) = let distance = sqrt((x2-x1)^2 + (y2-y1)^2)
+																				  in (gC * mass1 * mass2 * (abs(distance))) / (abs(distance)^2 + damp^2)**(3/2)
 
 sumForces :: [(Force, Force)] -> (Force, Force)
 sumForces forces = let xForce = sum [x | (x,_) <- forces]; yForce = sum [y | (_,y) <- forces]

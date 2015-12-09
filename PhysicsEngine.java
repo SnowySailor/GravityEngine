@@ -21,18 +21,21 @@ public class PhysicsEngine {
 
 	public PhysicsEngine() {
 		try {
-			String command = "pgrep \"processGravity\" | xargs kill -9";
+			String command = "pgrep processGravityTest | xargs kill -9";
 			proc = Runtime.getRuntime().exec(command);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		// points.add(new Point(1,500,200,-0.15,0,0,0,8000000));
-		// points.add(new Point(2,500,350,-0.016,-0.001,0,0,99999999));
-		// points.add(new Point(3,300,700,0,0,0,0,80000000));
+		// // points.add(new Point(1,500,200,0.01,0,0,0,8000000));
+		// // points.add(new Point(2,500,350,-0.006,-0.001,0,0,99999999));
+		points.add(new Point(1,500,100,0.005,0,0,0,8000000)); // Planet
+		points.add(new Point(2,500,420,0.0,0,0,0,99999999)); // Star
+		points.add(new Point(3,500,130,0.002,-0.00,0,0,80000)); // Moon
+		// points.add(new Point(3,300,700,0,0,-0.01,0,80000000));
 		// points.add(new Point(4,700,100,0,0,0,0,80000000));
 		// points.add(new Point(5,1400,0,0,0,0,0,80000000));
 		// points.add(new Point(6,1000,800,0,0,0,0,40000000));
-		this.points = generateNValues(10, 8000000, 90000000);
+		//this.points = generateNValues(10, 8000000, 90000000);
 		points.nextKey = points.getMaxKey();
 
 		DrawPanel panel = new DrawPanel();
@@ -42,7 +45,7 @@ public class PhysicsEngine {
 		app.setSize(this.size);
 		app.setVisible(true);
 		int time = 0;
-		while(time < 10000) {
+		while(time < 20000) {
 			panel.repaint();
 			time++;
 			System.out.println();
@@ -55,7 +58,7 @@ public class PhysicsEngine {
 		inputString = points.toString();
 
 		try {
-			String[] command = {"/bin/processGravity", inputString, ""+points.length, ""+points.nextKey};
+			String[] command = {"/bin/processGravityTest", inputString, ""+points.length, ""+points.nextKey};
 			proc = Runtime.getRuntime().exec(command);
 
 			stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -164,7 +167,7 @@ public class PhysicsEngine {
 			Color[] colors = new Color[]{Color.GREEN, Color.BLUE, Color.BLACK, Color.PINK, Color.RED, Color.GRAY, Color.MAGENTA, Color.ORANGE, Color.YELLOW, Color.CYAN, Color.LIGHT_GRAY, Color.DARK_GRAY};
 			for(Point p : pts) {
 				g.setColor(colors[p.key%12]);
-				g.fillOval((int)p.x, (int)p.y, (int)p.r*2,(int)p.r*2);
+				g.fillOval((int)p.x - (int)p.r, (int)p.y - (int)p.r, (int)p.r*2,(int)p.r*2);
 			}
 
 			g.dispose();
